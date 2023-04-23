@@ -1,0 +1,6 @@
+---
+- name: reconfigure locales
+  command: dpkg-reconfigure -f noninteractive locales
+
+- name: restart sshd
+  action: service name=sshd state=restarted

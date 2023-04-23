@@ -1,0 +1,122 @@
+---
+- name: update hostname
+  hostname:
+    name: "{{ hostname }}"
+
+- name: install locales
+  apt:
+    name: locales
+    state: "{{ state }}"
+
+- name: select locales to be generated
+  locale_gen:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ locales_generated }}"
+  notify: reconfigure locales
+
+- name: set default locale
+  lineinfile:
+    dest: "/etc/default/locale"
+    regexp: "^LANG="
+    line: "LANG={{ locales_default }}"
+  notify: reconfigure locales
+
+- name: install the usual suspects
+  apt:
+    name:
+    - sudo
+    - git
+    - logrotate
+    - curl
+    - ntp
+    - locate
+    - time
+    - htop
+    - iotop
+    - nmap
+    - atop
+    - vim
+    - man
+    - ranger
+    - tree
+    - wget
+    - bash-completion
+    - rsync
+    - ack
+    - entr
+    - net-tools
+    - dnsutils
+    - unison
+    - gnupg
+    - build-essential
+    - unzip
+    - aptitude
+    - jq
+    - dos2unix
+    - fail2ban
+    - socat
+    state: "{{ state }}"
+
+- name: restart ntp
+  systemd:
+    name: ntp
+    state: restarted
+
+- name: ssh
+  authorized_key:
+    user: root
+    key: https://github.com/{{ github }}.keys
+
+- name: disable root password login
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin .*$"
+    replace: "PermitRootLogin {{ permit_root_login }}"
+  notify: restart sshd
+
+- name: create ssh.d dir
+  file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+  notify: restart sshd
+
+- name: harden ssh
+  template:
+    src: "harden.conf.j2"
+    dest: "/etc/ssh/sshd_config.d/harden.conf"
+  notify: restart sshd
+
+- name: create root ssh key
+  user:
+    name: root
+    generate_ssh_key: yes
+    ssh_key_type: ed25519
+
+# there is/was a bug in the default buster iptables that
+# made it incompat with firewalld
+- name: install backports iptables
+  apt:
+    state: latest
+    name: iptables
+    default_release: "{{ansible_distribution_release}}-backports"
+  when:
+  - firewalld
+  - ansible_distribution_release == 'buster'
+
+- name: install firewalld
+  apt:
+    state: "{{ state }}"
+    name: firewalld
+    default_release: "{{ansible_distribution_release}}-backports"
+  when:
+  - firewalld
+  - ansible_distribution_release == 'buster'
+
+- name: install firewalld
+  apt:
+    state: "{{ state }}"
+    name: firewalld
+  when:
+  - firewalld
+  - ansible_distribution_release != 'buster'

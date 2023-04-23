@@ -1,0 +1,10 @@
+---
+fqdn: "{{ inventory_hostname }}"
+hostname: "{{ inventory_hostname_short }}"
+locales_generated: [en_GB.UTF-8]
+locales_default: en_GB.UTF-8
+timezone: Europe/London
+keymap: gb
+firewalld: yes
+state: present
+permit_root_login: prohibit-password
