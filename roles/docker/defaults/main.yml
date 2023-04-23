@@ -1,0 +1,10 @@
+---
+docker_version: none
+containerd_version: none
+compose_version: none
+machine_version: none
+dry_version: none
+dive_version: none
+docker_prune: no
+log_driver: default
+state: present

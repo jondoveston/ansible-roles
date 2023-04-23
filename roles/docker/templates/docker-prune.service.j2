@@ -1,0 +1,12 @@
+[Unit]
+Description=Docker prune service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker container prune -f --filter "until=24h"
+ExecStart=/usr/bin/docker image prune -f -a --filter="label!=maintainer"
+ExecStart=/usr/bin/docker volume prune -f --filter "label!=keep"
+ExecStart=/usr/bin/docker network prune -f --filter "until=24h"
+
+[Install]
+WantedBy=docker-prune.target

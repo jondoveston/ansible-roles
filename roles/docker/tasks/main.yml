@@ -1,0 +1,243 @@
+---
+- set_fact:
+     debian_architecture: amd64
+  when: ansible_architecture == "x86_64"
+
+- set_fact:
+     debian_architecture: arm64
+  when: ansible_architecture == "aarch64"
+
+- set_fact:
+     debian_architecture: armhf
+  when: ansible_architecture == "armv7l"
+
+# docker from docker.com
+
+- name: install deps
+  apt:
+    name:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg
+    - lsb-release
+  when:
+  - docker_version != "none" or containerd_version != "none"
+  - docker_version != "apt" or containerd_version != "apt"
+  - ansible_architecture == "x86_64"
+
+- name: docker key
+  apt_key:
+    id: 0EBFCD88
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+  when:
+  - docker_version != "none" or containerd_version != "none"
+  - docker_version != "apt" or containerd_version != "apt"
+  - ansible_architecture == "x86_64"
+
+- name: docker repo
+  apt_repository:
+    repo: "deb [arch={{ debian_architecture }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+  when:
+  - docker_version != "none" or containerd_version != "none"
+  - docker_version != "apt" or containerd_version != "apt"
+  - ansible_architecture == "x86_64"
+
+- name: install docker
+  apt:
+    name:
+    - "docker-ce{{ '='+docker_version if docker_version != 'latest' else '' }}*"
+    - "docker-ce-cli{{ '='+docker_version if docker_version != 'latest' else '' }}*"
+    state: "{{ state if docker_version == 'latest' else 'present' }}"
+  when:
+  - docker_version != "none"
+  - docker_version != "apt"
+  - ansible_architecture == "x86_64"
+
+- name: install containerd
+  apt:
+    name:
+    - "containerd.io{{ '='+containerd_version if containerd_version != 'latest' else '' }}*"
+    state: "{{ state if containerd_version == 'latest' else 'present' }}"
+  when:
+  - containerd_version != "none"
+  - containerd_version != "apt"
+  - ansible_architecture == "x86_64"
+
+- name: get script
+  get_url:
+    url: https://get.docker.com
+    dest: /tmp/get-docker.sh
+    mode: 0755
+  when:
+  - docker_version != "none"
+  - docker_version != "apt"
+  - ansible_architecture != "x86_64"
+
+- name: run script
+  command: /tmp/get-docker.sh
+  args:
+    creates: /usr/bin/docker
+  when:
+  - docker_version != "none"
+  - docker_version != "apt"
+  - ansible_architecture != "x86_64"
+
+- name: install python docker for ansible
+  pip:
+    name: docker
+    executable: pip3
+    state: "{{ state }}"
+  when:
+  - docker_version != "none"
+  - docker_version != "apt"
+
+- name: install docker-compose and docker_container python fix
+  apt:
+    name:
+    - "python-backports.ssl-match-hostname"
+    - "python-backports-shutil-get-terminal-size"
+    state: "{{ state }}"
+  when:
+  - docker_version != "none"
+  - docker_version != "apt"
+  - ansible_distribution_release == 'buster'
+
+# docker from apt
+
+- name: install docker
+  apt:
+    name:
+    - python-docker
+    state: absent
+  when:
+  - docker_version == "apt"
+
+- name: install docker
+  apt:
+    name:
+    - docker.io
+    - python3-docker
+    state: "{{ state }}"
+  when:
+  - docker_version == "apt"
+
+- name: install containerd
+  apt:
+    name:
+    - containerd
+    state: "{{ state }}"
+  when:
+  - containerd_version == "apt"
+
+# docker-compose from github
+
+- name: install compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/v{{compose_version}}/docker-compose-linux-{{ansible_architecture}}
+    dest: /usr/local/bin/docker-compose
+    mode: 0755
+  when:
+  - compose_version != "none"
+  - compose_version != "pip"
+
+# docker-compose from apt
+
+- name: install compose
+  apt:
+    name: docker-compose
+    state: "{{ state }}"
+  when: compose_version == "apt"
+
+# docker-compose from pip
+
+- name: install compose
+  apt:
+    name: libffi-dev
+  when: compose_version == "pip"
+
+- name: install compose
+  pip:
+    name: docker-compose
+    executable: pip3
+    state: "{{ state }}"
+  when: compose_version == "pip"
+
+# docker-machine from github
+
+- name: install machine
+  get_url:
+    url: https://github.com/docker/machine/releases/download/v{{machine_version}}/docker-machine-Linux-{{ansible_architecture}}
+    dest: /usr/local/bin/docker-machine
+    mode: 0755
+  when: machine_version != "none"
+
+# dry
+
+- name: install dry
+  get_url:
+    url: https://github.com/moncho/dry/releases/download/v{{dry_version}}/dry-linux-{{ debian_architecture }}
+    dest: /usr/local/bin/dry
+    mode: 0755
+  when: dry_version != "none"
+
+# dive
+
+- name: install dive
+  apt:
+    deb: "https://github.com/wagoodman/dive/releases/download/v{{ dive_version }}/dive_{{ dive_version }}_linux_{{ debian_architecture }}.deb"
+  when: dive_version != "none"
+
+# prune timer
+
+- name: docker prune timer
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    backup: yes
+  loop:
+  - docker-prune.timer
+  - docker-prune.target
+  - docker-prune.service
+  when: docker_prune
+
+- name: enable docker prunes
+  systemd:
+    enabled: yes
+    daemon_reload: yes
+    name: "{{ item }}"
+  loop:
+  - docker-prune.target
+  - docker-prune.service
+  when: docker_prune
+
+- name: start docker prune timer
+  systemd:
+    name: docker-prune.timer
+    state: started
+    enabled: yes
+  when: docker_prune
+
+# loki driver
+
+- name: docker install loki docker plugin
+  command: "docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions"
+  ignore_errors: yes
+  when:
+  - log_driver == "loki"
+  - ansible_architecture == "x86_64"
+
+- name: docker install loki docker plugin
+  command: "docker plugin install grafana/loki-docker-driver:arm-64 --alias loki --grant-all-permissions"
+  ignore_errors: yes
+  when:
+  - log_driver == "loki"
+  - ansible_architecture == "aarch64"
+
+- name: docker daemon.json
+  template:
+    src: "daemon.json.j2"
+    dest: "/etc/docker/daemon.json"
+    backup: yes
+  when:
+  - log_driver == "loki"
