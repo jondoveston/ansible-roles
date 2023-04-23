@@ -1,0 +1,41 @@
+---
+- name: download helm
+  unarchive:
+    src: https://get.helm.sh/helm-v{{ item }}-linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+    mode: 0755
+  check_mode: no
+  when:
+  - ansible_architecture == "x86_64"
+
+- name: download helm
+  unarchive:
+    src: https://get.helm.sh/helm-v{{ item }}-linux-arm64.tar.gz
+    dest: /tmp
+    remote_src: yes
+    mode: 0755
+  check_mode: no
+  when:
+  - ansible_architecture == "aarch64"
+
+- name: install helm
+  command: "mv /tmp/linux-amd64/helm /usr/local/bin/helm{{ item.split('.')[0] }}"
+  when:
+  - ansible_architecture == "x86_64"
+
+- name: install helm
+  command: "mv /tmp/linux-arm64/helm /usr/local/bin/helm{{ item.split('.')[0] }}"
+  when:
+  - ansible_architecture == "aarch64"
+
+- name: install helm secrets
+  become: yes
+  become_user: "{{user}}"
+  shell: "/usr/local/bin/helm{{ item.split('.')[0] }} plugin install --version {{ helm_secrets_version }} https://github.com/jkroepke/helm-secrets"
+  args:
+    creates: "/home/{{user}}/.helm/plugins/helm-secrets"
+  ignore_errors: yes
+  when:
+  - (user is defined) and (user|length > 0)
+  - helm_secrets_version != "none"

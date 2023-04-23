@@ -1,0 +1,9 @@
+---
+- include_tasks: install.yml
+  loop: "{{ helm_version }}"
+
+- name: symlink default version
+  file:
+    src: "/usr/local/bin/helm{{ helm_default_version.split('.')[0] }}"
+    dest: /usr/local/bin/helm
+    state: link
