@@ -1,0 +1,42 @@
+---
+- name: bullseye
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ bullseye_repos | difference(bullseye_repos_blacklist) }}"
+  when:
+  - ansible_distribution_release == 'bullseye'
+
+- name: install fasttrack
+  apt:
+    name: fasttrack-archive-keyring
+    state: "{{ state }}"
+  when:
+  - ansible_distribution_release == 'bullseye'
+
+- name: bullseye fasttrack
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+  - deb https://fasttrack.debian.net/debian-fasttrack/ bullseye-fasttrack main contrib
+  - deb https://fasttrack.debian.net/debian-fasttrack/ bullseye-backports-staging main contrib
+  when:
+  - ansible_distribution_release == 'bullseye'
+
+# raspbian 32bit bullseye
+# - name: all the repos
+#   apt_repository:
+#     repo: "{{ item }}"
+#     state: present
+#     update_cache: yes
+#   loop:
+#   - deb http://deb.debian.org/debian bullseye contrib non-free
+#   - deb-src http://deb.debian.org/debian bullseye contrib non-free
+#   - deb http://security.debian.org/debian-security bullseye-security contrib non-free
+#   - deb-src http://security.debian.org/debian-security bullseye-security contrib non-free
+#   when:
+#   - ansible_distribution_release == 'bullseye'
+#   - ansible_architecture == "armv7l"
