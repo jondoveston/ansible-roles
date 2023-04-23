@@ -1,0 +1,42 @@
+---
+- name: install git deps
+  apt:
+    name:
+    - make
+    - libssl-dev
+    - libghc-zlib-dev
+    - libcurl4-gnutls-dev
+    - libexpat1-dev
+    - gettext
+    - unzip
+    state: "{{ state }}"
+
+- name: get git version
+  command: /usr/local/bin/git version
+  ignore_errors: true
+  register: current_version
+
+- name: get git
+  unarchive:
+    src: "https://github.com/git/git/archive/refs/tags/v{{ git_version }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+  check_mode: no
+  when: current_version.failed or not current_version.stdout is search(git_version)
+
+- name: make
+  make:
+    target: all
+    chdir: "/tmp/git-{{ git_version }}"
+    params:
+      prefix: /usr/local
+    jobs: 4
+  when: current_version.failed or not current_version.stdout is search(git_version)
+
+- name: make install
+  make:
+    target: install
+    chdir: "/tmp/git-{{ git_version }}"
+    params:
+      prefix: /usr/local
+  when: current_version.failed or not current_version.stdout is search(git_version)

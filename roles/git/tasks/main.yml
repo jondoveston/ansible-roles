@@ -1,0 +1,22 @@
+---
+- name: install git
+  apt:
+    name:
+    - git
+    state: "{{ state }}"
+  when: git_version == 'apt'
+
+- name: install git
+  apt:
+    name:
+    - git
+    state: "{{ state }}"
+    default_release: "{{ansible_distribution_release}}-backports"
+  when: git_version == 'backports'
+
+- name: build git
+  include_tasks: "build.yml"
+  when:
+  - git_version != 'apt'
+  - git_version != 'backports'
+  - git_version != 'none'
