@@ -6,5 +6,7 @@ machine_version: none
 dry_version: none
 dive_version: none
 docker_prune: no
+
 log_driver: default
+storage_driver: default
 state: present

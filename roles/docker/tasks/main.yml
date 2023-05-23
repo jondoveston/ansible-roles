@@ -234,10 +234,14 @@
   - log_driver == "loki"
   - ansible_architecture == "aarch64"
 
+- name: template file to string
+  set_fact:
+    daemon_yaml: "{{ lookup('template', 'daemon.yaml.j2') | from_yaml }}"
+
 - name: docker daemon.json
-  template:
-    src: "daemon.json.j2"
+  copy:
+    content: "{{ daemon_yaml | to_json(indent=2) }}"
     dest: "/etc/docker/daemon.json"
     backup: yes
-  when:
-  - log_driver == "loki"
+  when: daemon_yaml != ""
+  notify: "restart docker"
