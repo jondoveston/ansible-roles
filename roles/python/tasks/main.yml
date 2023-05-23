@@ -7,5 +7,11 @@
     - python3-virtualenv
     - python3-venv
     - python3-setuptools
-    - python-is-python3
     state: "{{ state }}"
+
+- name: install
+  apt:
+    state: latest
+    name: python-is-python3
+  when:
+  - ansible_distribution_release != 'buster'
