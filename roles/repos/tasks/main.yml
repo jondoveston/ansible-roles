@@ -8,6 +8,15 @@
   when:
   - ansible_distribution_release == 'bullseye'
 
+- name: bookwork
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ bookworm_repos | difference(bookworm_repos_blacklist) }}"
+  when:
+  - ansible_distribution_release == 'bookworm'
+
 - name: install fasttrack
   apt:
     name: fasttrack-archive-keyring
