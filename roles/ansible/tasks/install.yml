@@ -1,0 +1,77 @@
+- name: install ansible
+  apt:
+    name: "{{ item }}"
+    state: "{{ state }}"
+  when: ver == 'apt'
+  loop:
+  - ansible
+  - ansible-lint
+  - python3-netaddr
+  - python3-prettytable
+
+- name: venv dir
+  become: yes
+  become_user: "{{user}}"
+  file:
+    path: ~/venv
+    state: directory
+  when:
+  - (user is defined) and (user|length > 0)
+  - ver != 'apt'
+
+- name: upgrade pip and setuptools
+  become: yes
+  become_user: "{{user}}"
+  pip:
+    name:
+    - pip
+    - setuptools
+    state: latest
+    virtualenv: "~/venv/ansible-{{ ver }}"
+    virtualenv_python: /usr/bin/python3
+  when:
+  - (user is defined) and (user|length > 0)
+  - ver != 'apt'
+
+- name: install ansible
+  become: yes
+  become_user: "{{user}}"
+  pip:
+    name: ansible
+    version: "{{ ver }}"
+    virtualenv: "~/venv/ansible-{{ ver }}"
+    virtualenv_python: /usr/bin/python3
+  when:
+  - (user is defined) and (user|length > 0)
+  - ver != 'apt'
+
+- name: install ansible
+  become: yes
+  become_user: "{{user}}"
+  pip:
+    name:
+    - ansible-compat
+    - prettytable
+    - netaddr
+    - pyyaml
+    - kubernetes
+    state: latest
+    virtualenv: "~/venv/ansible-{{ ver }}"
+    virtualenv_python: /usr/bin/python3
+  when:
+  - (user is defined) and (user|length > 0)
+  - ver != 'apt'
+
+- name: install ansible-lint
+  become: yes
+  become_user: "{{user}}"
+  pip:
+    name:
+    - ansible-lint
+    state: latest
+    virtualenv: "~/venv/ansible-{{ ver }}"
+    virtualenv_python: /usr/bin/python3
+  when:
+  - (user is defined) and (user|length > 0)
+  - ver != 'apt'
+  - ver is version('2.10.0', '>=')

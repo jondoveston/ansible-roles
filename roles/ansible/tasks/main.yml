@@ -1,0 +1,5 @@
+---
+- include_tasks: install.yml
+  loop: "{{ ans1ble_version }}"
+  loop_control:
+    loop_var: ver
