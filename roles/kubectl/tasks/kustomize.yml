@@ -1,0 +1,20 @@
+---
+- name: download kustomize
+  unarchive:
+    src: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv{{ item }}/kustomize_v{{ item }}_linux_{{ kubeshark_architecture[ansible_facts.architecture] }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+    include: kustomize
+    mode: 0755
+  check_mode: no
+  when:
+  - kustomize_architecture[ansible_facts.architecture] is defined
+  - item != "none"
+  - item != "apt"
+
+- name: install kustomize
+  command: "mv /tmp/kustomize /usr/local/bin/kustomize{{ item.split('.')[0] }}"
+  when:
+  - kustomize_architecture[ansible_facts.architecture] is defined
+  - item != "none"
+  - item != "apt"

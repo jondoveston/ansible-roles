@@ -1,0 +1,13 @@
+---
+kubectl_version: none
+kubetail_version: none
+kubectx_version: none
+kubecolor_version: none
+k9s_version: none
+argo_version: none
+popeye_version: none
+krew_version: none
+kind_version: none
+kubeshark_version: none
+kustomize_version: []
+state: present

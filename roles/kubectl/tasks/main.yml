@@ -1,0 +1,307 @@
+---
+- name: install kubectl
+  apt:
+    name:
+    - kubernetes-client
+    state: "{{ state }}"
+  when: kubectl_version == "apt"
+
+- name: install kubectl
+  get_url:
+    url: "https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/linux/{{ kubectl_architecture[ansible_facts.architecture] }}/kubectl"
+    dest: /usr/local/bin/kubectl
+    mode: 0775
+  when:
+  - kubectl_architecture[ansible_facts.architecture] is defined
+  - kubectl_version != "none"
+  - kubectl_version != "apt"
+
+- name: kubectl zsh autocomplete
+  shell: /usr/local/bin/kubectl completion zsh > /usr/local/share/zsh/site-functions/_kubectl
+  ignore_errors: yes
+  args:
+    creates: /usr/local/share/zsh/site-functions/_kubectl
+
+- name: install kind
+  get_url:
+    url: "https://github.com/kubernetes-sigs/kind/releases/download/v{{ kind_version }}/kind-linux-{{ kind_architecture[ansible_facts.architecture] }}"
+    dest: /usr/local/bin/kind
+    mode: 0775
+  when:
+  - kind_architecture[ansible_facts.architecture] is defined
+  - kind_version != "none"
+  - kind_version != "apt"
+
+- name: install kubeshark
+  get_url:
+    url: "https://github.com/kubeshark/kubeshark/releases/download/{{ kubeshark_version }}/kubeshark_linux_{{ kubeshark_architecture[ansible_facts.architecture] }}"
+    dest: /usr/local/bin/kubeshark
+    mode: 0775
+  when:
+  - kubeshark_architecture[ansible_facts.architecture] is defined
+  - kubeshark_version != "none"
+  - kubeshark_version != "apt"
+
+- include_tasks: kustomize.yml
+  loop: "{{ kustomize_version }}"
+
+- name: link first kustomize version
+  file:
+    src: "/usr/local/bin/kustomize{{ kustomize_version[0].split('.')[0] }}"
+    dest: /usr/local/bin/kustomize
+    state: link
+  when: kustomize_version|length > 0
+
+- name: kind zsh autocomplete
+  shell: /us/local/bin/kind completion zsh > /usr/local/share/zsh/site-functions/_kind
+  ignore_errors: yes
+  args:
+    creates: /usr/local/share/zsh/site-functions/_kind
+
+- name: install kubectx
+  apt:
+    name:
+    - kubectx
+    state: "{{ state }}"
+  when: kubectx_version == "apt"
+
+- name: install kubectx
+  unarchive:
+    src: "https://github.com/ahmetb/kubectx/releases/download/v{{ kubectx_version }}/{{ item }}_v{{ kubectx_version }}_linux_{{ kubectx_architecture[ansible_facts.architecture] }}.tar.gz"
+    dest: /usr/local/bin
+    include: "{{ item }}"
+    remote_src: yes
+    creates: "/usr/local/bin/{{ item }}"
+    mode: 0755
+  check_mode: no
+  loop:
+  - kubectx
+  - kubens
+  when:
+  - kubectx_architecture[ansible_facts.architecture] is defined
+  - kubectx_version != "none"
+  - kubectx_version != "apt"
+
+- name: install kubetail
+  apt:
+    name:
+    - kubetail
+    state: "{{ state }}"
+  when: kubetail_version == "apt"
+
+- name: install kubetail
+  get_url:
+    url: "https://github.com/johanhaleby/kubetail/raw/{{ kubetail_version }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: 0775
+  loop:
+  - kubetail
+  when:
+  - kubetail_version != "none"
+  - kubetail_version != "apt"
+
+- name: install kubecolor
+  apt:
+    name:
+    - kubecolor
+    state: "{{ state }}"
+  when: kubecolor_version == "apt"
+
+- name: install kubecolor
+  unarchive:
+    src: "https://github.com/hidetatz/kubecolor/releases/download/v{{ kubecolor_version }}/kubecolor_{{ kubecolor_version }}_Linux_{{ kubecolor_architecture[ansible_facts.architecture] }}.tar.gz"
+    dest: /usr/local/bin
+    include: kubecolor
+    remote_src: yes
+    creates: /usr/local/bin/kubecolor
+    mode: 0755
+  check_mode: no
+  when:
+  - kubecolor_architecture[ansible_facts.architecture] is defined
+  - kubecolor_version != "none"
+  - kubecolor_version != "apt"
+
+- name: install k1s
+  get_url:
+    url: "https://raw.githubusercontent.com/weibeld/k1s/master/k1s"
+    dest: "/usr/local/bin/k1s"
+    mode: 0775
+
+- name: install aliases
+  get_url:
+    url: "https://rawgit.com/ahmetb/kubectl-alias/master/.kubectl_aliases"
+    dest: "/usr/local/bin/kubectl_aliases"
+    mode: 0775
+
+- name: get k9s
+  unarchive:
+    src: "https://github.com/derailed/k9s/releases/download/v{{ k9s_version }}/k9s_Linux_x86_64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: yes
+    creates: /usr/local/bin/k9s
+    mode: 0755
+  check_mode: no
+  when:
+  - ansible_architecture == "x86_64"
+  - k9s_version != "none"
+
+- name: get k9s
+  unarchive:
+    src: "https://github.com/derailed/k9s/releases/download/v{{ k9s_version }}/k9s_Linux_arm64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: yes
+    creates: /usr/local/bin/k9s
+    mode: 0755
+  check_mode: no
+  when:
+  - ansible_architecture == "aarch64"
+  - k9s_version != "none"
+
+- name: k9s zshrc
+  become: yes
+  become_user: "{{ user }}"
+  blockinfile:
+    dest: "~/.zshrc.d/k9s"
+    create: yes
+    block: |
+      alias k9s='TERM=xterm-256color k9s'
+  when:
+  - (user is defined) and (user|length > 0)
+  - k9s_version != "none"
+
+- name: get popeye
+  unarchive:
+    src: "https://github.com/derailed/popeye/releases/download/v{{ popeye_version }}/popeye_Linux_x86_64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: yes
+    creates: /usr/local/bin/popeye
+    mode: 0755
+  check_mode: no
+  when:
+  - ansible_architecture == "x86_64"
+  - popeye_version != "none"
+
+- name: get popeye
+  unarchive:
+    src: "https://github.com/derailed/popeye/releases/download/v{{ popeye_version }}/popeye_Linux_arm64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: yes
+    creates: /usr/local/bin/popeye
+    mode: 0755
+  check_mode: no
+  when:
+  - ansible_architecture == "aarch64"
+  - popeye_version != "none"
+
+- name: remove flux
+  file:
+    path: /usr/local/bin/flux
+    state: absent
+
+- name: get argo
+  get_url:
+    url: "https://github.com/argoproj/argo-cd/releases/download/v{{ argo_version }}/argocd-linux-amd64"
+    dest: "/usr/local/bin/argocd"
+    mode: 0775
+  when:
+  - ansible_architecture == "x86_64"
+  - argo_version != "none"
+
+- name: get argo
+  get_url:
+    url: "https://github.com/argoproj/argo-cd/releases/download/v{{ argo_version }}/argocd-linux-arm64"
+    dest: "/usr/local/bin/argocd"
+    mode: 0775
+  when:
+  - ansible_architecture == "aarch64"
+  - argo_version != "none"
+
+- name: remove argo util
+  file:
+    path: /usr/local/bin/argocd-util
+    state: absent
+
+- name: get krew
+  unarchive:
+    src: "https://github.com/kubernetes-sigs/krew/releases/download/v{{ krew_version }}/krew-linux_amd64.tar.gz"
+    dest: /tmp
+    remote_src: yes
+    mode: 0755
+    creates: "/tmp/krew-linux_amd64"
+  check_mode: no
+  when:
+  - ansible_architecture == "x86_64"
+  - krew_version != "none"
+
+- name: install krew
+  become: yes
+  become_user: "{{user}}"
+  shell: "/tmp/krew-linux_amd64 install krew"
+  args:
+    creates: "~/.krew/bin/kubectl-krew"
+  when:
+  - ansible_architecture == "x86_64"
+  - krew_version != "none"
+  - (user is defined) and (user|length > 0)
+
+- name: zshenv for krew
+  become: yes
+  become_user: "{{user}}"
+  blockinfile:
+    dest: "~/.zshenv.d/krew"
+    create: yes
+    block: |
+      export PATH="${PATH}:${HOME}/.krew/bin"
+  when:
+  - ansible_architecture == "x86_64"
+  - krew_version != "none"
+  - (user is defined) and (user|length > 0)
+
+- name: krew update
+  become: yes
+  become_user: "{{user}}"
+  shell: "~/.krew/bin/kubectl-krew update"
+  when:
+  - ansible_architecture == "x86_64"
+  - krew_version != "none"
+  - (user is defined) and (user|length > 0)
+
+- name: install modify secret
+  become: yes
+  become_user: "{{user}}"
+  shell: "~/.krew/bin/kubectl-krew install modify-secret"
+  args:
+    creates: "~/.krew/bin/kubectl-modify_secret"
+  when:
+  - ansible_architecture == "x86_64"
+  - krew_version != "none"
+  - (user is defined) and (user|length > 0)
+
+- name: k9s modify secret plugin.yml
+  become: yes
+  become_user: "{{user}}"
+  blockinfile:
+    dest: "~/.k9s/plugin.yml"
+    create: yes
+    block: |
+      plugin:
+        edit-secret:
+          shortCut: Ctrl-X
+          confirm: false
+          description: "Edit Decoded Secret"
+          scopes:
+            - secrets
+          command: kubectl
+          background: false
+          args:
+            - modify-secret
+            - --namespace
+            - $NAMESPACE
+            - --context
+            - $CONTEXT
+            - $NAME
+  when:
+  - ansible_architecture == "x86_64"
+  - krew_version != "none"
+  - k9s_version != "none"
+  - (user is defined) and (user|length > 0)
