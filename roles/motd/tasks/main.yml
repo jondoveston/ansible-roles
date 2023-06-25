@@ -1,0 +1,58 @@
+---
+- name: install neofetch
+  apt:
+    state: "{{ state }}"
+    name:
+    - neofetch
+
+- name: install image backends
+  apt:
+    state: "{{ state }}"
+    name:
+    - w3m
+    - caca-utils
+    - imagemagick
+    - jp2a
+    - chafa
+    - libsixel-bin
+  when: image_backend != "off"
+
+- name: remove motd
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+  - "/etc/update-motd.d/10-uname"
+  - "/etc/motd"
+
+- name: disable last log
+  replace:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PrintLastLog .*$'
+    replace: 'PrintLastLog no'
+
+- name: neofetch dir
+  file:
+    path: /etc/neofetch
+    state: directory
+
+- name: copy image
+  copy:
+    src: "{{ hostname }}.{{ image_ext }}"
+    dest: "/etc/neofetch/{{ hostname }}.{{ image_ext }}"
+  when: image_backend != "off"
+
+- name: config
+  template:
+    src: "config.j2"
+    dest: "/etc/neofetch/config"
+
+- name: motd
+  template:
+    src: "10-neofetch.j2"
+    dest: "/etc/update-motd.d/10-neofetch"
+    mode: '0755'
+
+- name: clean cache
+  command:
+    cmd: /usr/bin/neofetch --clean

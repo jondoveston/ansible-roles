@@ -1,0 +1,25 @@
+---
+state: present
+hostname: "{{ inventory_hostname_short }}"
+image_backend: "off"
+image_ext: png
+# Crop mode
+#
+# Default:  'normal'
+# Values:   'normal', 'fit', 'fill'
+# Flag:     --crop_mode
+#
+# See this wiki page to learn about the fit and fill options.
+# https://github.com/dylanaraps/neofetch/wiki/What-is-Waifu-Crop%3F
+crop_mode: normal
+
+# Crop offset
+# Note: Only affects 'normal' crop mode.
+#
+# Default:  'center'
+# Values:   'northwest', 'north', 'northeast', 'west', 'center'
+#           'east', 'southwest', 'south', 'southeast'
+# Flag:     --crop_offset
+crop_offset: center
+
+motd_disks: ["/"]
