@@ -1,0 +1,60 @@
+---
+- name: install package
+  apt:
+    name:
+    - "{{ go_apt_package }}"
+    state: "{{ state }}"
+  when: go_version == 'apt'
+
+- name: install package
+  apt:
+    name:
+    - "{{ go_apt_package }}"
+    state: "{{ state }}"
+    default_release: "{{ansible_distribution_release}}-backports"
+  when: go_version == 'backports'
+
+- name: create dest dir
+  file:
+    path: /usr/local/go{{ go_version }}
+    state: directory
+    mode: 0755
+  when:
+  - go_architecture[ansible_facts.architecture] is defined
+  - go_version != 'apt'
+  - go_version != 'apt'
+  - go_version != 'none'
+
+- name: install tar
+  unarchive:
+    src: "http://golang.org/dl/go{{ go_version }}.linux-{{ go_architecture[ansible_facts.architecture] }}.tar.gz"
+    dest: /usr/local/go{{ go_version }}
+    creates: /usr/local/go{{ go_version }}/bin/go
+    extra_opts: [--strip-components=1]
+    remote_src: yes
+  when:
+  - go_architecture[ansible_facts.architecture] is defined
+  - go_version != 'apt'
+  - go_version != 'backports'
+  - go_version != 'none'
+
+- name: create sym link
+  file:
+    src: /usr/local/go{{ go_version }}
+    dest: /usr/local/go
+    state: link
+  when:
+  - go_architecture[ansible_facts.architecture] is defined
+  - go_version != 'apt'
+  - go_version != 'backports'
+  - go_version != 'none'
+
+- name: global env vars
+  template:
+    src: go.sh.j2
+    dest: /etc/profile.d/go.sh
+
+- name: create gobin
+  file:
+    path: /root/go/bin
+    state: directory

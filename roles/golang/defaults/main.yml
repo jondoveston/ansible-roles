@@ -1,0 +1,5 @@
+---
+go_apt_package: "golang"
+go_version: "none"
+go_bin_path: "/usr/local/go/bin"
+state: "present"
