@@ -1,0 +1,13 @@
+---
+- name: install
+  pip:
+    name: awscli
+    executable: pip3
+    state: "{{ state }}"
+  when: awscli_version == "pip"
+
+- name: install
+  apt:
+    name: awscli
+    state: "{{ state }}"
+  when: awscli_version == "apt"
