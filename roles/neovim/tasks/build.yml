@@ -1,0 +1,34 @@
+---
+- name: install neovim deps
+  apt:
+    name:
+    - ninja-build
+    - gettext
+    - libtool
+    - libtool-bin
+    - autoconf
+    - automake
+    - cmake
+    - g++
+    - pkg-config
+    - unzip
+    - curl
+    - doxygen
+    state: "{{ state }}"
+
+- name: get neovim
+  unarchive:
+    src: "https://github.com/neovim/neovim/archive/refs/tags/v{{ neovim_version }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+  check_mode: no
+
+- name: make
+  make:
+    chdir: "/tmp/neovim-{{ neovim_version }}"
+    jobs: 4
+
+- name: make install
+  make:
+    target: install
+    chdir: "/tmp/neovim-{{ neovim_version }}"

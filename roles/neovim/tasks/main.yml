@@ -1,0 +1,69 @@
+---
+- name: install pip3 neovim plugin
+  pip:
+    name: "{{ item }}"
+    executable: pip3
+    state: "{{ state }}"
+  ignore_errors: yes
+  loop:
+  - neovim
+  - pynvim
+  when: neovim_version != 'none'
+
+- name: install ruby neovim plugin
+  gem:
+    name: neovim
+    user_install: no
+    state: "{{ state }}"
+  ignore_errors: yes
+  when: neovim_version != 'none'
+
+- name: install nodejs neovim plugin
+  npm:
+    name: neovim
+    global: yes
+    state: "{{ state }}"
+  ignore_errors: yes
+  when: neovim_version != 'none'
+
+- name: install nodejs neovim plugin
+  npm:
+    name: tree-sitter-cli
+    global: yes
+    state: "{{ state }}"
+  ignore_errors: yes
+  when:
+  - ansible_architecture == "x86_64"
+  - neovim_version != 'none'
+
+- debug:
+    msg: tree-sitter-cli not built for arm64
+  when:
+  - ansible_architecture == "aarch64"
+  - neovim_version != 'none'
+
+- name: install neovim
+  apt:
+    name:
+    - neovim
+    state: "{{ state }}"
+  when: neovim_version == 'apt'
+
+
+- stat:
+    path=/usr/local/bin/nvim
+  register: neovim
+
+- name: build neovim
+  include_tasks: "build.yml"
+  when:
+  - neovim.stat.exists == false
+  - neovim_version != 'apt'
+  - neovim_version != 'none'
+
+#- name: make nvim the editor
+#  alternatives:
+#    name: editor
+#    path: /usr/local/bin/nvim
+#    priority: 50
+#  when: neovim_version != 'apt'
