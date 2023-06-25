@@ -1,0 +1,27 @@
+---
+- name: configure git user
+  git_config:
+    scope: global
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+  loop:
+  - { key: "user.email", value: "root@{{ ansible_fqdn }}" }
+  - { key: "user.name", value: "root" }
+
+- name: install etckeeper
+  apt:
+    state: "{{ state }}"
+    name:
+    - etckeeper
+
+- name: git init
+  shell: etckeeper init && etckeeper commit "Initial commit"
+  args:
+    chdir: /etc
+    creates: /etc/.git
+
+- name: setup remote
+  shell: "(git remote | grep origin) || git remote add origin {{ etckeeper_remote }}"
+  args:
+    chdir: /etc
+  when: etckeeper_remote != ""
