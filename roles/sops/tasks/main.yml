@@ -1,0 +1,13 @@
+---
+- name: install
+  apt:
+    deb: "https://github.com/mozilla/sops/releases/download/v{{ sops_version }}/sops_{{ sops_version }}_{{ sops_architecture[ansible_facts.architecture] }}.deb"
+  when:
+  - sops_architecture[ansible_facts.architecture] is defined
+  - sops_version != "none"
+
+- name: remove old sops
+  file:
+    path: /usr/local/bin/sops
+    state: absent
+  when: ansible_architecture == "aarch64"
