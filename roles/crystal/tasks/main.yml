@@ -1,0 +1,16 @@
+---
+- name: apt key
+  apt_key:
+    url: "https://packagecloud.io/84codes/crystal/gpgkey"
+    state: present
+
+- name: apt repo
+  apt_repository:
+    repo: "deb https://packagecloud.io/84codes/crystal/any any main"
+    state: present
+
+- name: install
+  apt:
+    name: crystal
+    update_cache: yes
+    state: "{{ state }}"
