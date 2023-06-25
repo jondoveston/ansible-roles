@@ -69,6 +69,13 @@
     user: root
     key: https://github.com/{{ github }}.keys
 
+
+- name: extra keys
+  authorized_key:
+    user: root
+    key: "{{ item }}"
+  loop: "{{ extra_authorized_keys }}"
+
 - name: disable root password login
   replace:
     path: /etc/ssh/sshd_config

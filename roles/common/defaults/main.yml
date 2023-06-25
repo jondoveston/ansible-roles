@@ -8,3 +8,4 @@ keymap: gb
 firewalld: yes
 state: present
 permit_root_login: prohibit-password
+extra_authorized_keys: []
