@@ -159,7 +159,7 @@
 
 - name: k9s zshrc
   become: yes
-  become_user: "{{ user }}"
+  become_user: "{{user}}"
   blockinfile:
     dest: "~/.zshrc.d/k9s"
     create: yes
