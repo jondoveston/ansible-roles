@@ -8,7 +8,7 @@
   when:
   - ansible_distribution_release == 'bullseye'
 
-- name: bookwork
+- name: bookworm
   apt_repository:
     repo: "{{ item }}"
     state: present
