@@ -1,0 +1,33 @@
+---
+- name: install deps
+  apt:
+    name:
+    - apt-transport-https
+    - ca-certificates
+    - gnupg
+    - curl
+    - sudo
+
+- name: add repo key
+  apt_key:
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+    keyring: "/usr/share/keyrings/cloud.google.gpg"
+
+- name: add package source
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+
+- name: install jdk
+  apt:
+    name: default-jdk-headless
+
+- name: install gcloud
+  apt:
+    name: "google-cloud-sdk={{ gcloud_version if gcloud_version != 'latest' else '' }}*"
+    state: "{{ state if gcloud_version == 'latest' else 'present' }}"
+
+- name: install components
+  apt:
+    name: "{{ item }}={{ gcloud_version if gcloud_version != 'latest' else '' }}*"
+    state: "{{ state if gcloud_version == 'latest' else 'present' }}"
+  loop: "{{ gcloud_components }}"
