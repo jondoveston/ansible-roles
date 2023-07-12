@@ -1,0 +1,48 @@
+---
+- include_tasks: install.yml
+  loop: "{{ terraform_version }}"
+
+- include_tasks: tfenv.yml
+  when:
+  - tfenv
+  - (user is defined) and (user|length > 0)
+
+- name: zshrc
+  become: yes
+  become_user: "{{user}}"
+  blockinfile:
+    dest: "~/.zshrc.d/terraform"
+    create: yes
+    block: |
+      alias tf='terraform'
+  when: (user is defined) and (user|length > 0)
+
+- name: cheat
+  become: yes
+  become_user: "{{user}}"
+  lineinfile:
+    path: "~/.zshrc.d/cheatsheet"
+    line: "_cheat 'tf' 'terraform'"
+    search_string: 'terraform'
+    create: yes
+  when: (user is defined) and (user|length > 0)
+
+- name: terraform plugin cache
+  become: yes
+  become_user: "{{user}}"
+  lineinfile:
+    path: "~/.terraformrc"
+    regexp: '^plugin_cache_dir'
+    line: 'plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"'
+    create: yes
+  when: (user is defined) and (user|length > 0)
+
+- name: terraform config
+  become: yes
+  become_user: "{{user}}"
+  lineinfile:
+    path: "~/.terraformrc"
+    regexp: '^disable_checkpoint'
+    line: 'disable_checkpoint = true'
+    create: yes
+  when: (user is defined) and (user|length > 0)

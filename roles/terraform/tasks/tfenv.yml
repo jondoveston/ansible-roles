@@ -1,0 +1,24 @@
+---
+- name: clone tfenv
+  become: yes
+  become_user: "{{user}}"
+  git:
+    repo: 'https://github.com/tfutils/tfenv.git'
+    dest: "~/.tfenv"
+
+- name: chown tfenv
+  become: yes
+  become_user: "{{user}}"
+  file:
+    dest: "~/.tfenv"
+    state: directory
+    recurse: yes
+
+- name: zshenv for tfenv
+  become: yes
+  become_user: "{{user}}"
+  blockinfile:
+    dest: "~/.zshenv.d/tfenv"
+    create: yes
+    block: |
+      export PATH="$HOME/.tfenv/bin:$PATH"

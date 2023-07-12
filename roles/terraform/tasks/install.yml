@@ -1,0 +1,13 @@
+---
+- name: install terraform
+  unarchive:
+    src: "https://releases.hashicorp.com/terraform/{{ item }}/terraform_{{ item }}_linux_{{ terraform_architecture[ansible_facts.architecture] }}.zip"
+    dest: /usr/local/bin
+    remote_src: yes
+    mode: 0755
+    creates: "/usr/local/bin/terraform{{ item.split('.')[1] }}"
+
+- name: install terraform
+  command: "mv /usr/local/bin/terraform /usr/local/bin/terraform{{ item.split('.')[1] }}"
+  args:
+    creates: "/usr/local/bin/terraform{{ item.split('.')[1] }}"
