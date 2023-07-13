@@ -1,0 +1,31 @@
+---
+- name: install tmux deps
+  apt:
+    name:
+    - libevent-dev
+    - ncurses-dev
+    - build-essential
+    - bison
+    - pkg-config
+
+- name: get tmux
+  unarchive:
+    src: "https://github.com/tmux/tmux/releases/download/{{ tmux_version }}/tmux-{{ tmux_version }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+  check_mode: no
+
+- name: configure tmux
+  command: "./configure"
+  args:
+    chdir: "/tmp/tmux-{{ tmux_version }}"
+    creates: "/tmp/tmux-{{ tmux_version }}/config.status"
+
+- name: make tmux
+  make:
+    chdir: "/tmp/tmux-{{ tmux_version }}"
+
+- name: make install
+  make:
+    target: install
+    chdir: "/tmp/tmux-{{ tmux_version }}"

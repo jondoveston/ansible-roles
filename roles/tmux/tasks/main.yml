@@ -1,0 +1,16 @@
+---
+- name: install tmux
+  apt:
+    name: tmux
+  when: tmux_version == "apt"
+
+- stat:
+    path=/usr/local/bin/tmux
+  register: tmux
+
+- name: build tmux
+  include_tasks: "build.yml"
+  when:
+  - tmux_version != "apt"
+  - tmux_version != "none"
+  - tmux.stat.exists == false
