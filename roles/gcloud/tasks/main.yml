@@ -24,10 +24,8 @@
 - name: install gcloud
   apt:
     name: "google-cloud-sdk={{ gcloud_version if gcloud_version != 'latest' else '' }}*"
-    state: "{{ state if gcloud_version == 'latest' else 'present' }}"
 
 - name: install components
   apt:
     name: "{{ item }}={{ gcloud_version if gcloud_version != 'latest' else '' }}*"
-    state: "{{ state if gcloud_version == 'latest' else 'present' }}"
   loop: "{{ gcloud_components }}"

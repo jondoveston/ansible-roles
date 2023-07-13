@@ -10,9 +10,7 @@
 
 - name: install etckeeper
   apt:
-    state: "{{ state }}"
-    name:
-    - etckeeper
+    name: etckeeper
 
 - name: git init
   shell: etckeeper init && etckeeper commit "Initial commit"

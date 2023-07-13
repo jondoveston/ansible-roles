@@ -1,13 +1,10 @@
 ---
 - name: install neofetch
   apt:
-    state: "{{ state }}"
-    name:
-    - neofetch
+    name: neofetch
 
 - name: install image backends
   apt:
-    state: "{{ state }}"
     name:
     - w3m
     - caca-utils

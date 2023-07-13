@@ -27,4 +27,3 @@ gcloud_components: []
 # - google-cloud-cli-terraform-validator
 # - google-cloud-cli-tests
 # - kubectl
-state: present

@@ -10,5 +10,4 @@ krew_version: none
 kind_version: none
 kubeshark_version: none
 kustomize_version: []
-state: present
 user:

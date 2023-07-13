@@ -1,12 +1,9 @@
 ---
 - name: install
   apt:
-    name:
-    - ruby-full
-    state: "{{ state }}"
+    name: ruby-full
 
 - name: bundler
   gem:
     name: bundler
     user_install: no
-    state: "{{ state }}"

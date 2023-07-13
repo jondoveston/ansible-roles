@@ -1,9 +1,7 @@
 ---
 - name: install kubectl
   apt:
-    name:
-    - kubernetes-client
-    state: "{{ state }}"
+    name: kubernetes-client
   when: kubectl_version == "apt"
 
 - name: install kubectl
@@ -60,9 +58,7 @@
 
 - name: install kubectx
   apt:
-    name:
-    - kubectx
-    state: "{{ state }}"
+    name: kubectx
   when: kubectx_version == "apt"
 
 - name: install kubectx
@@ -84,9 +80,7 @@
 
 - name: install kubetail
   apt:
-    name:
-    - kubetail
-    state: "{{ state }}"
+    name: kubetail
   when: kubetail_version == "apt"
 
 - name: install kubetail
@@ -102,9 +96,7 @@
 
 - name: install kubecolor
   apt:
-    name:
-    - kubecolor
-    state: "{{ state }}"
+    name: kubecolor
   when: kubecolor_version == "apt"
 
 - name: install kubecolor

@@ -48,7 +48,6 @@
     name:
     - "docker-ce{{ '='+docker_version if docker_version != 'latest' else '' }}*"
     - "docker-ce-cli{{ '='+docker_version if docker_version != 'latest' else '' }}*"
-    state: "{{ state if docker_version == 'latest' else 'present' }}"
   when:
   - docker_version != "none"
   - docker_version != "apt"
@@ -58,7 +57,6 @@
   apt:
     name:
     - "containerd.io{{ '='+containerd_version if containerd_version != 'latest' else '' }}*"
-    state: "{{ state if containerd_version == 'latest' else 'present' }}"
   when:
   - containerd_version != "none"
   - containerd_version != "apt"
@@ -87,7 +85,6 @@
   pip:
     name: docker
     executable: pip3
-    state: "{{ state }}"
   when:
   - docker_version != "none"
   - docker_version != "apt"
@@ -97,7 +94,6 @@
     name:
     - "python-backports.ssl-match-hostname"
     - "python-backports-shutil-get-terminal-size"
-    state: "{{ state }}"
   when:
   - docker_version != "none"
   - docker_version != "apt"
@@ -107,8 +103,7 @@
 
 - name: install docker
   apt:
-    name:
-    - python-docker
+    name: python-docker
     state: absent
   when:
   - docker_version == "apt"
@@ -118,7 +113,6 @@
     name:
     - docker.io
     - python3-docker
-    state: "{{ state }}"
   when:
   - docker_version == "apt"
 
@@ -126,7 +120,6 @@
   apt:
     name:
     - containerd
-    state: "{{ state }}"
   when:
   - containerd_version == "apt"
 
@@ -146,7 +139,6 @@
 - name: install compose
   apt:
     name: docker-compose
-    state: "{{ state }}"
   when: compose_version == "apt"
 
 # docker-compose from pip
@@ -160,7 +152,6 @@
   pip:
     name: docker-compose
     executable: pip3
-    state: "{{ state }}"
   when: compose_version == "pip"
 
 # docker-machine from github

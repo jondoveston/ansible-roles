@@ -6,7 +6,6 @@
 - name: install locales
   apt:
     name: locales
-    state: "{{ state }}"
 
 - name: select locales to be generated
   locale_gen:
@@ -57,7 +56,6 @@
     - fail2ban
     - socat
     - sshpass
-    state: "{{ state }}"
 
 - name: restart ntp
   systemd:
@@ -100,12 +98,12 @@
     name: root
     generate_ssh_key: yes
     ssh_key_type: ed25519
+    # ssh_key_file: .ssh/id_ed25519
 
 # there is/was a bug in the default buster iptables that
 # made it incompat with firewalld
 - name: install backports iptables
   apt:
-    state: latest
     name: iptables
     default_release: "{{ansible_distribution_release}}-backports"
   when:
@@ -114,7 +112,6 @@
 
 - name: install firewalld
   apt:
-    state: "{{ state }}"
     name: firewalld
     default_release: "{{ansible_distribution_release}}-backports"
   when:
@@ -123,7 +120,6 @@
 
 - name: install firewalld
   apt:
-    state: "{{ state }}"
     name: firewalld
   when:
   - firewalld

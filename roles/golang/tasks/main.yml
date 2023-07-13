@@ -3,14 +3,12 @@
   apt:
     name:
     - "{{ go_apt_package }}"
-    state: "{{ state }}"
   when: go_version == 'apt'
 
 - name: install package
   apt:
     name:
     - "{{ go_apt_package }}"
-    state: "{{ state }}"
     default_release: "{{ansible_distribution_release}}-backports"
   when: go_version == 'backports'
 

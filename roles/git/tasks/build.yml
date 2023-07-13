@@ -9,7 +9,6 @@
     - libexpat1-dev
     - gettext
     - unzip
-    state: "{{ state }}"
 
 - name: get git version
   command: /usr/local/bin/git version

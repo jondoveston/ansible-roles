@@ -3,7 +3,6 @@
   pip:
     name: "{{ item }}"
     executable: pip3
-    state: "{{ state }}"
   ignore_errors: yes
   loop:
   - neovim
@@ -14,7 +13,6 @@
   gem:
     name: neovim
     user_install: no
-    state: "{{ state }}"
   ignore_errors: yes
   when: neovim_version != 'none'
 
@@ -22,7 +20,6 @@
   npm:
     name: neovim
     global: yes
-    state: "{{ state }}"
   ignore_errors: yes
   when: neovim_version != 'none'
 
@@ -30,7 +27,6 @@
   npm:
     name: tree-sitter-cli
     global: yes
-    state: "{{ state }}"
   ignore_errors: yes
   when:
   - ansible_architecture == "x86_64"
@@ -44,9 +40,7 @@
 
 - name: install neovim
   apt:
-    name:
-    - neovim
-    state: "{{ state }}"
+    name: neovim
   when: neovim_version == 'apt'
 
 

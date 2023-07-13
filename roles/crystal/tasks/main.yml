@@ -13,4 +13,3 @@
   apt:
     name: crystal
     update_cache: yes
-    state: "{{ state }}"

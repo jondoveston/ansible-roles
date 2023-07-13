@@ -9,4 +9,3 @@ docker_prune: no
 
 log_driver: default
 storage_driver: default
-state: present

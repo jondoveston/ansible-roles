@@ -1,5 +1,4 @@
 ---
-state: present
 hostname: "{{ inventory_hostname_short }}"
 image_backend: "off"
 image_ext: png

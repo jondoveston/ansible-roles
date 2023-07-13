@@ -20,7 +20,6 @@
 - name: install fasttrack
   apt:
     name: fasttrack-archive-keyring
-    state: "{{ state }}"
   when:
   - ansible_distribution_release == 'bullseye'
 

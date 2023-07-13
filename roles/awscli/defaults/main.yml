@@ -1,3 +1,2 @@
 ---
 awscli_version: "apt"
-state: present

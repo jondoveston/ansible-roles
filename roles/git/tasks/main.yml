@@ -1,16 +1,12 @@
 ---
 - name: install git
   apt:
-    name:
-    - git
-    state: "{{ state }}"
+    name: git
   when: git_version == 'apt'
 
 - name: install git
   apt:
-    name:
-    - git
-    state: "{{ state }}"
+    name: git
     default_release: "{{ansible_distribution_release}}-backports"
   when: git_version == 'backports'
 
