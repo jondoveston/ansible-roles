@@ -1,0 +1,7 @@
+---
+- name: restart iperf
+  systemd:
+    name: iperf
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

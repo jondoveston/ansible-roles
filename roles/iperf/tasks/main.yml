@@ -1,0 +1,20 @@
+---
+- name: install iperf3
+  apt:
+    name: iperf3
+
+- name: add iperf service
+  template:
+    src: iperf.xml.j2
+    dest: /etc/firewalld/services/iperf.xml
+  when: firewalld
+
+- name: iperf.service
+  template:
+    src: iperf.service.j2
+    dest: /lib/systemd/system/iperf.service
+  notify: restart iperf
+
+- name: reload firewall
+  command: firewall-cmd --reload
+  when: firewalld
